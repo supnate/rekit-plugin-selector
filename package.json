@@ -1,0 +1,13 @@
+{
+  "name": "rekit-plugin-reselect",
+  "version": "0.0.1",
+  "description": "description of reselect",
+  "keywords": [
+    "rekit"
+  ],
+  "dependencies": {
+    "rekit-core": "next"
+  },
+  "devDependencies": {
+  }
+}
