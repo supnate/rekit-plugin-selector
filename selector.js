@@ -5,10 +5,26 @@
 
 // rekitCore is the one that dependent by the project using the plugin.
 // You may need it to perform common tasks such as use refactor to rename variables in a module.
-// const rekitCore = require('rekit-core');
+const path = require('path');
+const _ = require('lodash');
+const rekitCore = require('rekit-core');
+const utils = rekitCore.utils;
+const refactor = rekitCore.refactor;
+const vio = rekitCore.vio;
+const template = rekitCore.template;
 
 function add(feature, name) {
-  console.log('Adding reselect.');
+  // ensure the folder
+  const prjRoot = utils.getProjectRoot();
+  const selectorsDir = utils.mapFeatureFile(feature, 'selectors');
+  if (vio.dirNotExists(selectorsDir)) vio.mkdir(selectorsDir);
+
+  const targetPath = utils.mapFeatureFile(feature, `selectors/${_.camelCase(name)}.js`);
+  template.generate(targetPath, {
+    templateFile: path.join(__dirname, 'templates/selector.js'),
+    context: { feature, name },
+  });
+  console.log('adding done.', targetPath);
 }
 
 function remove(feature, name) {

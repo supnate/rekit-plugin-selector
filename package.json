@@ -6,8 +6,8 @@
     "rekit"
   ],
   "dependencies": {
+    "lodash": "^4.17.4",
     "rekit-core": "next"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }
