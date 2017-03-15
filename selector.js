@@ -3,7 +3,7 @@
 // This is the main module of the plugin where you define
 // add, remove, move method to manage elements.
 
-// rekitCore is the one that dependent by the project using the plugin.
+// rekitCore is the one that is dependent by the project using the plugin.
 // You may need it to perform common tasks such as use refactor to rename variables in a module.
 const path = require('path');
 const _ = require('lodash');
@@ -19,36 +19,48 @@ function add(feature, name) {
   const selectorsDir = utils.mapFeatureFile(feature, 'selectors');
   if (vio.dirNotExists(selectorsDir)) vio.mkdir(selectorsDir);
 
-  const targetPath = utils.mapFeatureFile(feature, `selectors/${_.camelCase(name)}.js`);
+  let targetPath;
+  // Create the selector file
+  targetPath = utils.mapFeatureFile(feature, `selectors/${_.camelCase(name)}.js`);
   template.generate(targetPath, {
     templateFile: path.join(__dirname, 'templates/selector.js'),
     context: { feature, name },
   });
-  console.log('adding done.', targetPath);
+
+  // Create the selector test file
+  targetPath = utils.mapTestFile(feature, `selectors/${_.camelCase(name)}.test.js`);
+  template.generate(targetPath, {
+    templateFile: path.join(__dirname, 'templates/selector.test.js'),
+    context: { feature, name },
+  });
 }
 
 function remove(feature, name) {
-  console.log('Removing reselect.');
+  let targetPath;
+  // Delete the selector file
+  targetPath = utils.mapFeatureFile(feature, `selectors/${_.camelCase(name)}.js`);
+  vio.del(targetPath);
+
+  // Delete the selector test file
+  targetPath = utils.mapTestFile(feature, `selectors/${_.camelCase(name)}.test.js`);
+  vio.del(targetPath);
 }
 
 function move(source, target) {
-  console.log('Moving reselect.');
-}
+  let oldPath;
+  let newPath;
+  // Move the selector file
+  oldPath = utils.mapFeatureFile(source.feature, `selectors/${_.camelCase(source.name)}.js`);
+  newPath = utils.mapFeatureFile(target.feature, `selectors/${_.camelCase(target.name)}.js`);
+  vio.move(oldPath, newPath);
 
-function install() {
-  // Called when using 'rekit install plugin-name' to install the plugin.
-  // Should check repeated installation.
-  console.log('Installing reselect');
-}
-function uninstall() {
-  // Called when using 'rekit uninstall plugin-name' to install the plugin.
-  // Should check repeated uninstallation.
-  console.log('Uninstalling reselect');
+  // Move the selector test file
+  oldPath = utils.mapTestFile(source.feature, `selectors/${_.camelCase(source.name)}.test.js`);
+  newPath = utils.mapTestFile(target.feature, `selectors/${_.camelCase(target.name)}.test.js`);
+  vio.move(oldPath, newPath);
 }
 
 module.exports = {
-  install,
-  uninstall,
   add,
   remove,
   move,
