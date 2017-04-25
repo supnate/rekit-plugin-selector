@@ -48,16 +48,42 @@ module.exports = function(rekitCore) {
   function move(source, target) {
     let oldPath;
     let newPath;
+    source.feature = _.kebabCase(source.feature);
+    target.feature = _.kebabCase(target.feature);
+    source.name = _.camelCase(source.name);
+    target.name = _.camelCase(target.name);
     // Move the selector file
-    oldPath = utils.mapFeatureFile(source.feature, `selectors/${_.camelCase(source.name)}.js`);
-    newPath = utils.mapFeatureFile(target.feature, `selectors/${_.camelCase(target.name)}.js`);
+    oldPath = utils.mapFeatureFile(source.feature, `selectors/${source.name}.js`);
+    newPath = utils.mapFeatureFile(target.feature, `selectors/${target.name}.js`);
     vio.move(oldPath, newPath);
 
+    // Try to rename the selector
+    let targetPath = utils.mapFeatureFile(target.feature, `selectors/${target.name}.js`)
+    refactor.renameIdentifier(targetPath, source.name, target.name);
+
     // Move the selector test file
-    oldPath = utils.mapTestFile(source.feature, `selectors/${_.camelCase(source.name)}.test.js`);
-    newPath = utils.mapTestFile(target.feature, `selectors/${_.camelCase(target.name)}.test.js`);
+    oldPath = utils.mapTestFile(source.feature, `selectors/${source.name}.test.js`);
+    newPath = utils.mapTestFile(target.feature, `selectors/${target.name}.test.js`);
     vio.move(oldPath, newPath);
+
+    // Update the reference in test files
+    const oldImportPath = `src/features/${source.feature}/selectors/${source.name}`;
+    const newImportPath = `src/features/${target.feature}/selectors/${target.name}`;
+
+    const oldDescribe = `${source.feature}/selectors/${source.name}`;
+    const newDescribe = `${target.feature}/selectors/${target.name}`;
+
+    const oldDescribe2 = `${source.feature}/selectors/${source.name}`;
+    const newDescribe2 = `${target.feature}/selectors/${target.name}`;
+
+    targetPath = utils.mapTestFile(target.feature, `selectors/${target.name}.test.js`);
+    refactor.updateFile(targetPath, ast => [].concat(
+      refactor.renameImportSpecifier(ast, source.name, target.name),
+      refactor.renameModuleSource(ast, oldImportPath, newImportPath),
+      refactor.renameStringLiteral(ast, oldDescribe, newDescribe)
+    ));
   }
+
   return {
     add,
     remove,
